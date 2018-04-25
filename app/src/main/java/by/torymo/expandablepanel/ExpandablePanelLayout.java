@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -19,8 +20,13 @@ import android.widget.TextView;
 public class ExpandablePanelLayout extends LinearLayout implements ExpandablePanel{
 
     private int duration;
-    private boolean defaultExpanded;
-    private int defaultChildIndex;
+    private boolean defaultExpanded = false;
+    int collapsedIcon;
+    int expandedIcon;
+    boolean headerIcon;
+    String headerText;
+
+    boolean expanded = defaultExpanded;
 
     private TextView vHeaderLabel;
     private ImageView vHeaderIcon;
@@ -29,10 +35,12 @@ public class ExpandablePanelLayout extends LinearLayout implements ExpandablePan
 
     public ExpandablePanelLayout(Context context) {
         super(context, null);
+        init(context, null, 0);
     }
 
     public ExpandablePanelLayout(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs, 0);
+        init(context, attrs, 0);
     }
 
     public ExpandablePanelLayout(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -51,14 +59,37 @@ public class ExpandablePanelLayout extends LinearLayout implements ExpandablePan
                 context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if(inflater == null) return;
 
-        inflater.inflate(R.layout.panel_header, this);
+        inflater.inflate(R.layout.expandable_panel, this);
 
         vHeaderLabel = findViewById(R.id.vHeaderLabel);
         vHeaderIcon = findViewById(R.id.vHeaderIcon);
         vHeader = findViewById(R.id.vHeader);
         vContent = findViewById(R.id.vContent);
 
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ExpandablePanelLayout, defStyleAttr, 0);
+
+        headerText = a.getString(R.styleable.ExpandablePanelLayout_headerText);
+        collapsedIcon = a.getResourceId(R.styleable.ExpandablePanelLayout_collapsedIcon, R.drawable.chevron_down);
+        expandedIcon = a.getResourceId(R.styleable.ExpandablePanelLayout_expandedIcon, R.drawable.chevron_up);
+        headerIcon = a.getBoolean(R.styleable.ExpandablePanelLayout_expandedIcon, true);
+        defaultExpanded = a.getBoolean(R.styleable.ExpandablePanelLayout_defaultExpanded, false);
+
+
+        if(defaultExpanded){
+            expand();
+        }else {
+            collapse();
+        }
+        vHeaderLabel.setText(headerText);
+
+        a.recycle();
+
         assignClickHandlers();
+    }
+
+    public void setContent(View view){
+        vContent.removeAllViews();
+        vContent.addView(view);
     }
 
     private void assignClickHandlers()
@@ -80,7 +111,8 @@ public class ExpandablePanelLayout extends LinearLayout implements ExpandablePan
 
     @Override
     public void toggle() {
-
+        if(isExpanded())collapse();
+        else expand();
     }
 
     @Override
@@ -90,7 +122,18 @@ public class ExpandablePanelLayout extends LinearLayout implements ExpandablePan
 
     @Override
     public void expand() {
+        if(isExpanded()) return;
+        if(headerIcon)
+            vHeaderIcon.setImageResource(expandedIcon);
+        vContent.setVisibility(VISIBLE);
 
+        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
+        if (layoutParams != null) {
+            layoutParams.height = vContent.getHeight() + vHeader.getHeight();
+            setLayoutParams(layoutParams);
+        }
+
+        expanded = true;
     }
 
     @Override
@@ -100,7 +143,17 @@ public class ExpandablePanelLayout extends LinearLayout implements ExpandablePan
 
     @Override
     public void collapse() {
+        if(headerIcon)
+            vHeaderIcon.setImageResource(collapsedIcon);
+        vContent.setVisibility(INVISIBLE);
 
+        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
+        if (layoutParams != null) {
+            layoutParams.height = vHeader.getHeight();
+            setLayoutParams(layoutParams);
+        }
+
+        expanded = false;
     }
 
     @Override
@@ -125,7 +178,7 @@ public class ExpandablePanelLayout extends LinearLayout implements ExpandablePan
 
     @Override
     public boolean isExpanded() {
-        return false;
+        return expanded;
     }
 
     @Override

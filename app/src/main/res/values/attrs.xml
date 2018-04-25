@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ExpandablePanelLayout">
+        <attr name="headerText" format="string" />
+        <attr name="collapsedIcon" format="reference" />
+        <attr name="expandedIcon" format="reference" />
+        <attr name="headerIcon" format="boolean" />
+        <attr name="defaultExpanded" format="boolean" />
+        <attr name="labelPosition" format="enum">
+            <enum name="left" value="0"/>
+            <enum name="right" value="1"/>
+        </attr>
+    </declare-styleable>
+</resources>
