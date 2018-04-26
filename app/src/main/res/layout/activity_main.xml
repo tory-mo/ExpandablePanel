@@ -5,26 +5,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/colorAccent"
     tools:context="by.torymo.expandablepanel.MainActivity">
-
     <by.torymo.expandablepanel.ExpandablePanelLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:id="@+id/panel1"
-        app:headerText="Неблагоприятные явления">
-
+        app:headerText="Неблагоприятные явления"
+        app:header_paddingLeft="16dp"
+        app:header_paddingRight="16dp"
+        app:header_paddingTop="10dp"
+        app:header_paddingBottom="10dp"
+        app:header_backgroundColor="@color/colorPrimaryDark"
+        app:content_backgroundColor="@color/colorAccent">
     </by.torymo.expandablepanel.ExpandablePanelLayout>
     <by.torymo.expandablepanel.ExpandablePanelLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/panel1"
         android:id="@+id/panel2"
-        app:headerText="Этот день в истории метеонаблюдений">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Теплее всего: +23,3С - в 1995 г.\nХолоднее всего: -4,8С - в 1988 г.\nБольше всего осдков: 24 в 1963 г."/>
+        app:headerText="Этот день в истории метеонаблюдений"
+        app:header_paddingLeft="16dp"
+        app:header_paddingRight="16dp"
+        app:header_paddingTop="10dp"
+        app:header_paddingBottom="10dp"
+        android:layout_marginTop="10dp"
+        app:header_backgroundColor="@color/colorPrimaryDark"
+        app:content_backgroundColor="@color/colorAccent">
     </by.torymo.expandablepanel.ExpandablePanelLayout>
 
 </LinearLayout>

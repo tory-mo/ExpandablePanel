@@ -6,9 +6,15 @@
         <attr name="expandedIcon" format="reference" />
         <attr name="headerIcon" format="boolean" />
         <attr name="defaultExpanded" format="boolean" />
-        <attr name="labelPosition" format="enum">
-            <enum name="left" value="0"/>
-            <enum name="right" value="1"/>
-        </attr>
+        <attr name="header_paddingTop" format="dimension" />
+        <attr name="header_paddingBottom" format="dimension" />
+        <attr name="header_paddingLeft" format="dimension" />
+        <attr name="header_paddingRight" format="dimension" />
+        <attr name="content_paddingTop" format="dimension" />
+        <attr name="content_paddingBottom" format="dimension" />
+        <attr name="content_paddingLeft" format="dimension" />
+        <attr name="content_paddingRight" format="dimension" />
+        <attr name="content_backgroundColor" format="color" />
+        <attr name="header_backgroundColor" format="color" />
     </declare-styleable>
 </resources>

@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
     <TextView
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="25.04.18 в 17:00 ШТОРМ Новогрудок (Беларусь) 25-го апреля в 17:05, Гроза на станции, Северо-северо-западное направление, ср. скорость 1 м\/с, макс. скорость 4 м\/с(порыв), наблюдаемая погода - слабая гроза с осадками в срок наблюдения."/>
-</LinearLayout>
+        android:id="@+id/tvHY"/>

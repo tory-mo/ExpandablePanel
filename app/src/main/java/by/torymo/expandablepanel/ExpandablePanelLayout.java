@@ -1,37 +1,56 @@
 package by.torymo.expandablepanel;
 
 
-import android.animation.TimeInterpolator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class ExpandablePanelLayout extends LinearLayout implements ExpandablePanel{
+public class ExpandablePanelLayout extends LinearLayout{
 
-    private int duration;
+    private int duration = 300;
     private boolean defaultExpanded = false;
-    int collapsedIcon;
-    int expandedIcon;
-    boolean headerIcon;
-    String headerText;
+    private boolean defaultHeaderIcon = true;
+    private int collapsedIcon;
+    private int expandedIcon;
+    private boolean headerIcon;
+    private String headerText;
 
-    boolean expanded = defaultExpanded;
+    private boolean expanded = defaultExpanded;
+
+    private int mContentHeight = 0;
+    private int mHeaderHeight = 0;
 
     private TextView vHeaderLabel;
     private ImageView vHeaderIcon;
     private RelativeLayout vHeader;
     private LinearLayout vContent;
+
+    private boolean isCreated;
+
+    private float hpt;
+    private float hpb;
+    private float hpl;
+    private float hpr;
+
+    private float cpt;
+    private float cpb;
+    private float cpl;
+    private float cpr;
+
+    private int headerBgColor = 0;
+    private int contentBgColor = 0;
 
     public ExpandablePanelLayout(Context context) {
         super(context, null);
@@ -71,118 +90,188 @@ public class ExpandablePanelLayout extends LinearLayout implements ExpandablePan
         headerText = a.getString(R.styleable.ExpandablePanelLayout_headerText);
         collapsedIcon = a.getResourceId(R.styleable.ExpandablePanelLayout_collapsedIcon, R.drawable.chevron_down);
         expandedIcon = a.getResourceId(R.styleable.ExpandablePanelLayout_expandedIcon, R.drawable.chevron_up);
-        headerIcon = a.getBoolean(R.styleable.ExpandablePanelLayout_expandedIcon, true);
-        defaultExpanded = a.getBoolean(R.styleable.ExpandablePanelLayout_defaultExpanded, false);
+        headerIcon = a.getBoolean(R.styleable.ExpandablePanelLayout_expandedIcon, defaultHeaderIcon);
+        defaultExpanded = a.getBoolean(R.styleable.ExpandablePanelLayout_defaultExpanded, defaultExpanded);
 
+        hpt = a.getDimension(R.styleable.ExpandablePanelLayout_header_paddingTop, 0);
+        hpb = a.getDimension(R.styleable.ExpandablePanelLayout_header_paddingBottom, 0);
+        hpl = a.getDimension(R.styleable.ExpandablePanelLayout_header_paddingLeft, 0);
+        hpr = a.getDimension(R.styleable.ExpandablePanelLayout_header_paddingRight, 0);
 
-        if(defaultExpanded){
-            expand();
-        }else {
-            collapse();
-        }
-        vHeaderLabel.setText(headerText);
+        cpt = a.getDimension(R.styleable.ExpandablePanelLayout_content_paddingTop, 0);
+        cpb = a.getDimension(R.styleable.ExpandablePanelLayout_content_paddingBottom, 0);
+        cpl = a.getDimension(R.styleable.ExpandablePanelLayout_content_paddingLeft, 0);
+        cpr = a.getDimension(R.styleable.ExpandablePanelLayout_content_paddingRight, 0);
+
+        contentBgColor = a.getColor(R.styleable.ExpandablePanelLayout_content_backgroundColor, 0);
+        headerBgColor = a.getColor(R.styleable.ExpandablePanelLayout_header_backgroundColor, 0);
 
         a.recycle();
 
-        assignClickHandlers();
+
     }
 
-    public void setContent(View view){
-        vContent.removeAllViews();
-        vContent.addView(view);
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (!isCreated) {
+            buildView();
+            isCreated = true;
+        }
     }
 
-    private void assignClickHandlers()
-    {
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        if (!isCreated) {
+            buildView();
+            isCreated = true;
+        }
+    }
+
+    private void buildView(){
+        vHeaderLabel.setText(headerText);
+
+        vHeader.setPadding((int)hpl,(int)hpt, (int)hpr, (int)hpb);
+        if(headerBgColor != 0){
+            vHeader.setBackgroundColor(headerBgColor);
+        }
+
+        mHeaderHeight = vHeader.getHeight();
+
+        vContent.setPadding((int)cpl,(int)cpt, (int)cpr, (int)cpb);
+        if(contentBgColor != 0){
+            vContent.setBackgroundColor(contentBgColor);
+        }
+
         vHeader.setOnClickListener(new OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-//                if(eventHandler != null){
-//                    Date[] startEnd = getCurrentMonthStartEnd();
-//                    eventHandler.onMonthChanged(startEnd[0], startEnd[1]);
-//                }
                 if(isExpanded()) collapse();
                 else expand();
             }
         });
+
+        initState();
     }
 
-    @Override
+    private void initState(){
+        if(defaultExpanded){
+            expand();
+        }else {
+            collapse();
+        }
+    }
+
+    public void setContent(View view){
+        vContent.removeAllViews();
+        vContent.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+    }
+
     public void toggle() {
         if(isExpanded())collapse();
         else expand();
     }
 
-    @Override
-    public void toggle(long duration, @Nullable TimeInterpolator interpolator) {
-
+    public void toggle(long duration) {
+        if(isExpanded())collapse(duration);
+        else expand(duration);
     }
 
-    @Override
     public void expand() {
-        if(isExpanded()) return;
+        expand(duration);
+    }
+
+    public void expand(long duration) {
         if(headerIcon)
             vHeaderIcon.setImageResource(expandedIcon);
         vContent.setVisibility(VISIBLE);
 
-        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
-        if (layoutParams != null) {
-            layoutParams.height = vContent.getHeight() + vHeader.getHeight();
-            setLayoutParams(layoutParams);
-        }
+        final int targetHeight = mContentHeight + mHeaderHeight;
+
+        Animation a = new ExpandAnimation(mHeaderHeight, targetHeight);
+        a.setDuration(duration);
+        startAnimation(a);
 
         expanded = true;
     }
 
-    @Override
-    public void expand(long duration, @Nullable TimeInterpolator interpolator) {
-
+    public void collapse() {
+        collapse(duration);
     }
 
-    @Override
-    public void collapse() {
+    public void collapse(long duration) {
         if(headerIcon)
             vHeaderIcon.setImageResource(collapsedIcon);
         vContent.setVisibility(INVISIBLE);
 
-        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
-        if (layoutParams != null) {
-            layoutParams.height = vHeader.getHeight();
-            setLayoutParams(layoutParams);
-        }
+//        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
+//        if (layoutParams != null) {
+//            layoutParams.height = mHeaderHeight;
+//            setLayoutParams(layoutParams);
+//        }
+
+        final int targetHeight = mContentHeight + mHeaderHeight;
+        Animation a = new ExpandAnimation(targetHeight, mHeaderHeight);
+        a.setDuration(duration);
+        startAnimation(a);
 
         expanded = false;
     }
 
-    @Override
-    public void collapse(long duration, @Nullable TimeInterpolator interpolator) {
-
-    }
-
-    @Override
-    public void setListener(@NonNull ExpandablePanelListener listener) {
-
-    }
-
-    @Override
     public void setDuration(int duration) {
-
+        this.duration = duration;
     }
 
-    @Override
-    public void setExpanded(boolean expanded) {
-
-    }
-
-    @Override
     public boolean isExpanded() {
         return expanded;
     }
 
     @Override
-    public void setInterpolator(@NonNull TimeInterpolator interpolator) {
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+
+        vContent.measure(widthMeasureSpec, MeasureSpec.UNSPECIFIED);
+        int currC = vContent.getMeasuredHeight();
+
+
+        vHeader.measure(widthMeasureSpec, MeasureSpec.UNSPECIFIED);
+        int currH = vHeader.getMeasuredHeight();
+        if(currH != mHeaderHeight || currC != mContentHeight){
+            mHeaderHeight = currH;
+            mContentHeight = currC;
+            initState();
+        }
+
+        // Then let the usual thing happen
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+
+    private class ExpandAnimation extends Animation {
+
+        private final int mStartHeight;
+        private final int mDeltaHeight;
+
+        ExpandAnimation(int startHeight, int endHeight) {
+            mStartHeight = startHeight;
+            mDeltaHeight = endHeight - startHeight;
+        }
+
+        @Override
+        protected void applyTransformation(float interpolatedTime,
+                                           Transformation t) {
+            android.view.ViewGroup.LayoutParams lp = getLayoutParams();
+            lp.height = (int) (mStartHeight + mDeltaHeight * interpolatedTime);
+            setLayoutParams(lp);
+        }
+
+        @Override
+        public boolean willChangeBounds() {
+            // TODO Auto-generated method stub
+            return true;
+        }
 
     }
 }
