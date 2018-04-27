@@ -17,12 +17,12 @@
             android:layout_height="24dp"
             android:id="@+id/vHeaderIcon"
             android:layout_alignParentRight="true"/>
-
     </RelativeLayout>
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#bbb"
+        android:layout_height="@dimen/separator_height"
+        android:id="@+id/vSeparator1"
+        android:background="@color/separator_color"
         android:alpha="0.2"/>
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,7 +32,8 @@
     </LinearLayout>
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#bbb"
-        android:alpha="0.2"/>
+        android:layout_height="@dimen/separator_height"
+        android:id="@+id/vSeparator2"
+        android:alpha="0.2"
+        android:background="@color/separator_color"/>
 </LinearLayout>

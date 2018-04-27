@@ -16,5 +16,11 @@
         <attr name="content_paddingRight" format="dimension" />
         <attr name="content_backgroundColor" format="color" />
         <attr name="header_backgroundColor" format="color" />
+        <attr name="header_separator" format="boolean" />
+        <attr name="header_separator_expanded" format="boolean" />
+        <attr name="content_separator" format="boolean" />
+        <attr name="separators_color" format="color" />
+        <attr name="separators_height" format="dimension" />
+        <attr name="separators_alpha" format="float" />
     </declare-styleable>
 </resources>

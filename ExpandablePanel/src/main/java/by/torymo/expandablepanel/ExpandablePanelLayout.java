@@ -22,20 +22,26 @@ public class ExpandablePanelLayout extends LinearLayout{
     private int duration = 300;
     private boolean defaultExpanded = false;
     private boolean defaultHeaderIcon = true;
+    private boolean defaultHeaderSeparator = true;
+    private boolean defaultHeaderSeparatorExpanded = true;
+    private boolean defaultContentSeparator = true;
     private int collapsedIcon;
     private int expandedIcon;
     private boolean headerIcon;
     private String headerText;
-
-    private boolean expanded = defaultExpanded;
+    private int separatorsColor;
+    private float separatorsAlpha;
 
     private int mContentHeight = 0;
     private int mHeaderHeight = 0;
+    private int mSeparatorsHeight = 0;
 
     private TextView vHeaderLabel;
     private ImageView vHeaderIcon;
     private RelativeLayout vHeader;
     private LinearLayout vContent;
+    private View vSeparator1;
+    private View vSeparator2;
 
     private boolean isCreated;
 
@@ -84,6 +90,8 @@ public class ExpandablePanelLayout extends LinearLayout{
         vHeaderIcon = findViewById(R.id.vHeaderIcon);
         vHeader = findViewById(R.id.vHeader);
         vContent = findViewById(R.id.vContent);
+        vSeparator1 = findViewById(R.id.vSeparator1);
+        vSeparator2 = findViewById(R.id.vSeparator2);
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ExpandablePanelLayout, defStyleAttr, 0);
 
@@ -106,9 +114,23 @@ public class ExpandablePanelLayout extends LinearLayout{
         contentBgColor = a.getColor(R.styleable.ExpandablePanelLayout_content_backgroundColor, 0);
         headerBgColor = a.getColor(R.styleable.ExpandablePanelLayout_header_backgroundColor, 0);
 
+        defaultHeaderSeparator = a.getBoolean(R.styleable.ExpandablePanelLayout_header_separator, defaultHeaderSeparator);
+        defaultContentSeparator = a.getBoolean(R.styleable.ExpandablePanelLayout_content_separator, defaultContentSeparator);
+        defaultHeaderSeparatorExpanded = a.getBoolean(R.styleable.ExpandablePanelLayout_header_separator_expanded, defaultHeaderSeparatorExpanded);
+
+        if(defaultHeaderSeparator || defaultContentSeparator || defaultExpanded) {
+            mSeparatorsHeight = (int) getResources().getDimension(R.dimen.separator_height);
+            mSeparatorsHeight = (int)a.getDimension(R.styleable.ExpandablePanelLayout_separators_height, mSeparatorsHeight);
+
+            separatorsColor = getResources().getColor(R.color.separator_color);
+            separatorsColor = a.getColor(R.styleable.ExpandablePanelLayout_separators_color, separatorsColor);
+
+            separatorsAlpha = 0.2f;
+//            separatorsAlpha = getResources().getDimension(R.dimen.separator_alpha);
+//            separatorsAlpha = (int)a.getDimension(R.styleable.ExpandablePanelLayout_separators_alpha, separatorsAlpha);
+        }
+
         a.recycle();
-
-
     }
 
     @Override
@@ -157,12 +179,26 @@ public class ExpandablePanelLayout extends LinearLayout{
         initState();
     }
 
-    private void initState(){
-        if(defaultExpanded){
-            expand();
-        }else {
-            collapse();
+    private void hideShowSeparators(boolean expanded){
+        if((!expanded && defaultHeaderSeparator) || (expanded && defaultHeaderSeparatorExpanded)){
+            vSeparator1.setBackgroundColor(separatorsColor);
+            vSeparator1.setAlpha(separatorsAlpha);
+            vSeparator1.setVisibility(VISIBLE);
+        }else{
+            vSeparator1.setVisibility(GONE);
         }
+
+        if(defaultContentSeparator){
+            vSeparator2.setBackgroundColor(separatorsColor);
+            vSeparator2.setAlpha(separatorsAlpha);
+            vSeparator2.setVisibility(VISIBLE);
+        }else{
+            vSeparator2.setVisibility(GONE);
+        }
+    }
+
+    private void initState(){
+        toggle();
     }
 
     public void setContent(View view){
@@ -188,14 +224,23 @@ public class ExpandablePanelLayout extends LinearLayout{
         if(headerIcon)
             vHeaderIcon.setImageResource(expandedIcon);
         vContent.setVisibility(VISIBLE);
+        hideShowSeparators(!defaultExpanded);
 
-        final int targetHeight = mContentHeight + mHeaderHeight;
+        int startHeight = mHeaderHeight;
+        int targetHeight = mContentHeight + mHeaderHeight;
+        if(defaultHeaderSeparator && defaultContentSeparator){
+            targetHeight += mSeparatorsHeight * 2;
+            startHeight += mSeparatorsHeight;
+        }else if(defaultHeaderSeparator || defaultContentSeparator){
+            targetHeight += mSeparatorsHeight;
+            startHeight += mSeparatorsHeight;
+        }
 
-        Animation a = new ExpandAnimation(mHeaderHeight, targetHeight);
+        Animation a = new ExpandAnimation(startHeight, targetHeight);
         a.setDuration(duration);
         startAnimation(a);
 
-        expanded = true;
+        defaultExpanded = true;
     }
 
     public void collapse() {
@@ -207,18 +252,31 @@ public class ExpandablePanelLayout extends LinearLayout{
             vHeaderIcon.setImageResource(collapsedIcon);
         vContent.setVisibility(INVISIBLE);
 
+        hideShowSeparators(!defaultExpanded);
+
 //        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
 //        if (layoutParams != null) {
 //            layoutParams.height = mHeaderHeight;
 //            setLayoutParams(layoutParams);
 //        }
 
-        final int targetHeight = mContentHeight + mHeaderHeight;
-        Animation a = new ExpandAnimation(targetHeight, mHeaderHeight);
+        //final int targetHeight = mContentHeight + mHeaderHeight+mSeparatorsHeight;
+
+        int startHeight = mHeaderHeight;
+        int targetHeight = mContentHeight + mHeaderHeight;
+        if(defaultHeaderSeparator && defaultContentSeparator){
+            targetHeight += mSeparatorsHeight * 2;
+            startHeight += mSeparatorsHeight;
+        }else if(defaultHeaderSeparator || defaultContentSeparator){
+            targetHeight += mSeparatorsHeight;
+            startHeight += mSeparatorsHeight;
+        }
+
+        Animation a = new ExpandAnimation(targetHeight, startHeight);
         a.setDuration(duration);
         startAnimation(a);
 
-        expanded = false;
+        defaultExpanded = false;
     }
 
     public void setDuration(int duration) {
@@ -226,7 +284,7 @@ public class ExpandablePanelLayout extends LinearLayout{
     }
 
     public boolean isExpanded() {
-        return expanded;
+        return defaultExpanded;
     }
 
     @Override
