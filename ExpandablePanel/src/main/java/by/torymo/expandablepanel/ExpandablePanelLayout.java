@@ -27,7 +27,6 @@ public class ExpandablePanelLayout extends LinearLayout{
     private boolean defaultContentSeparator = true;
     private int collapsedIcon;
     private int expandedIcon;
-    private boolean headerIcon;
     private String headerText;
     private int separatorsColor;
     private float separatorsAlpha;
@@ -57,6 +56,14 @@ public class ExpandablePanelLayout extends LinearLayout{
 
     private int headerBgColor = 0;
     private int contentBgColor = 0;
+
+    public EventHandler eventHandler;
+
+    int targetHeight = 0;
+
+    public interface EventHandler{
+        void onExpanded(int height);
+    }
 
     public ExpandablePanelLayout(Context context) {
         super(context, null);
@@ -98,7 +105,7 @@ public class ExpandablePanelLayout extends LinearLayout{
         headerText = a.getString(R.styleable.ExpandablePanelLayout_headerText);
         collapsedIcon = a.getResourceId(R.styleable.ExpandablePanelLayout_collapsedIcon, R.drawable.chevron_down);
         expandedIcon = a.getResourceId(R.styleable.ExpandablePanelLayout_expandedIcon, R.drawable.chevron_up);
-        headerIcon = a.getBoolean(R.styleable.ExpandablePanelLayout_expandedIcon, defaultHeaderIcon);
+        defaultHeaderIcon = a.getBoolean(R.styleable.ExpandablePanelLayout_expandedIcon, defaultHeaderIcon);
         defaultExpanded = a.getBoolean(R.styleable.ExpandablePanelLayout_defaultExpanded, defaultExpanded);
 
         hpt = a.getDimension(R.styleable.ExpandablePanelLayout_header_paddingTop, 0);
@@ -126,8 +133,6 @@ public class ExpandablePanelLayout extends LinearLayout{
             separatorsColor = a.getColor(R.styleable.ExpandablePanelLayout_separators_color, separatorsColor);
 
             separatorsAlpha = 0.2f;
-//            separatorsAlpha = getResources().getDimension(R.dimen.separator_alpha);
-//            separatorsAlpha = (int)a.getDimension(R.styleable.ExpandablePanelLayout_separators_alpha, separatorsAlpha);
         }
 
         a.recycle();
@@ -198,12 +203,15 @@ public class ExpandablePanelLayout extends LinearLayout{
     }
 
     private void initState(){
-        toggle();
+        if(isExpanded())expand();
+        else collapse();
     }
 
     public void setContent(View view){
         vContent.removeAllViews();
         vContent.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        //initState();
     }
 
     public void toggle() {
@@ -221,13 +229,13 @@ public class ExpandablePanelLayout extends LinearLayout{
     }
 
     public void expand(long duration) {
-        if(headerIcon)
+        if(defaultHeaderIcon)
             vHeaderIcon.setImageResource(expandedIcon);
         vContent.setVisibility(VISIBLE);
         hideShowSeparators(!defaultExpanded);
 
         int startHeight = mHeaderHeight;
-        int targetHeight = mContentHeight + mHeaderHeight;
+        targetHeight = mContentHeight + mHeaderHeight;
         if(defaultHeaderSeparator && defaultContentSeparator){
             targetHeight += mSeparatorsHeight * 2;
             startHeight += mSeparatorsHeight;
@@ -247,20 +255,22 @@ public class ExpandablePanelLayout extends LinearLayout{
         collapse(duration);
     }
 
+    @Override
+    protected void onAnimationEnd() {
+        super.onAnimationEnd();
+
+        if(eventHandler != null && isExpanded()) {
+            eventHandler.onExpanded(targetHeight);
+            targetHeight = 0;
+        }
+    }
+
     public void collapse(long duration) {
-        if(headerIcon)
+        if(defaultHeaderIcon)
             vHeaderIcon.setImageResource(collapsedIcon);
         vContent.setVisibility(INVISIBLE);
 
         hideShowSeparators(!defaultExpanded);
-
-//        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
-//        if (layoutParams != null) {
-//            layoutParams.height = mHeaderHeight;
-//            setLayoutParams(layoutParams);
-//        }
-
-        //final int targetHeight = mContentHeight + mHeaderHeight+mSeparatorsHeight;
 
         int startHeight = mHeaderHeight;
         int targetHeight = mContentHeight + mHeaderHeight;
@@ -304,6 +314,11 @@ public class ExpandablePanelLayout extends LinearLayout{
 
         // Then let the usual thing happen
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    public void setEventHandler(EventHandler eventHandler)
+    {
+        this.eventHandler = eventHandler;
     }
 
 
