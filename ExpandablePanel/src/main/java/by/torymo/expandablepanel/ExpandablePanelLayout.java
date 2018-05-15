@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Build;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +38,7 @@ public class ExpandablePanelLayout extends LinearLayout{
 
     private TextView vHeaderLabel;
     private ImageView vHeaderIcon;
-    private RelativeLayout vHeader;
+    private ConstraintLayout vHeader;
     private LinearLayout vContent;
     private View vSeparator1;
     private View vSeparator2;
