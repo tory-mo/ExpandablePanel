@@ -23,9 +23,9 @@ public class ExpandablePanelLayout extends LinearLayout{
     private int duration = 300;
     private boolean defaultExpanded = false;
     private boolean defaultHeaderIcon = true;
-    private boolean defaultHeaderSeparator = true;
-    private boolean defaultHeaderSeparatorExpanded = true;
-    private boolean defaultContentSeparator = true;
+    private boolean defaultHeaderSeparator = true; //visible only when expanded
+    private boolean defaultCollapsedSeparator = true; //visible only when collapsed
+    private boolean defaultContentSeparator = true; //visible only when expanded
     private int collapsedIcon;
     private int expandedIcon;
     private String headerText;
@@ -124,7 +124,7 @@ public class ExpandablePanelLayout extends LinearLayout{
 
         defaultHeaderSeparator = a.getBoolean(R.styleable.ExpandablePanelLayout_header_separator, defaultHeaderSeparator);
         defaultContentSeparator = a.getBoolean(R.styleable.ExpandablePanelLayout_content_separator, defaultContentSeparator);
-        defaultHeaderSeparatorExpanded = a.getBoolean(R.styleable.ExpandablePanelLayout_header_separator_expanded, defaultHeaderSeparatorExpanded);
+        defaultCollapsedSeparator = a.getBoolean(R.styleable.ExpandablePanelLayout_collapsed_separator, defaultCollapsedSeparator);
 
         if(defaultHeaderSeparator || defaultContentSeparator || defaultExpanded) {
             mSeparatorsHeight = (int) getResources().getDimension(R.dimen.separator_height);
@@ -186,7 +186,7 @@ public class ExpandablePanelLayout extends LinearLayout{
     }
 
     private void hideShowSeparators(boolean expanded){
-        if((!expanded && defaultHeaderSeparator) || (expanded && defaultHeaderSeparatorExpanded)){
+        if((expanded && defaultHeaderSeparator) || (!expanded && defaultCollapsedSeparator)){
             vSeparator1.setBackgroundColor(separatorsColor);
             vSeparator1.setAlpha(separatorsAlpha);
             vSeparator1.setVisibility(VISIBLE);
@@ -194,13 +194,25 @@ public class ExpandablePanelLayout extends LinearLayout{
             vSeparator1.setVisibility(GONE);
         }
 
-        if(defaultContentSeparator){
+        if(expanded && defaultContentSeparator){
             vSeparator2.setBackgroundColor(separatorsColor);
             vSeparator2.setAlpha(separatorsAlpha);
             vSeparator2.setVisibility(VISIBLE);
         }else{
             vSeparator2.setVisibility(GONE);
         }
+    }
+
+    private int countSeparatorsVisible(boolean expanded){ //max is 2
+        int res = 0;
+        if(!expanded && defaultCollapsedSeparator){
+            res++;
+        }else if(expanded){
+            if(defaultContentSeparator) res++;
+            if(defaultHeaderSeparator) res++;
+        }
+
+        return res;
     }
 
     private void initState(){
@@ -233,23 +245,21 @@ public class ExpandablePanelLayout extends LinearLayout{
         if(defaultHeaderIcon)
             vHeaderIcon.setImageResource(expandedIcon);
         vContent.setVisibility(VISIBLE);
-        hideShowSeparators(!defaultExpanded);
+
+        defaultExpanded = true;
+        hideShowSeparators(true);
 
         int startHeight = mHeaderHeight;
         targetHeight = mContentHeight + mHeaderHeight;
-        if(defaultHeaderSeparator && defaultContentSeparator){
-            targetHeight += mSeparatorsHeight * 2;
-            startHeight += mSeparatorsHeight;
-        }else if(defaultHeaderSeparator || defaultContentSeparator){
-            targetHeight += mSeparatorsHeight;
-            startHeight += mSeparatorsHeight;
-        }
+        int separators = countSeparatorsVisible(true);
+        targetHeight += mSeparatorsHeight * separators;
+        if(separators > 0) startHeight += mSeparatorsHeight;
 
         Animation a = new ExpandAnimation(startHeight, targetHeight);
         a.setDuration(duration);
         startAnimation(a);
 
-        defaultExpanded = true;
+
     }
 
     public void collapse() {
@@ -271,23 +281,21 @@ public class ExpandablePanelLayout extends LinearLayout{
             vHeaderIcon.setImageResource(collapsedIcon);
         vContent.setVisibility(INVISIBLE);
 
-        hideShowSeparators(!defaultExpanded);
+        defaultExpanded = false;
+
+        hideShowSeparators(false);
 
         int startHeight = mHeaderHeight;
         int targetHeight = mContentHeight + mHeaderHeight;
-        if(defaultHeaderSeparator && defaultContentSeparator){
-            targetHeight += mSeparatorsHeight * 2;
-            startHeight += mSeparatorsHeight;
-        }else if(defaultHeaderSeparator || defaultContentSeparator){
-            targetHeight += mSeparatorsHeight;
-            startHeight += mSeparatorsHeight;
-        }
+        int separators = countSeparatorsVisible(false);
+        targetHeight += mSeparatorsHeight * separators;
+        if(separators > 0) startHeight += mSeparatorsHeight;
 
         Animation a = new ExpandAnimation(targetHeight, startHeight);
         a.setDuration(duration);
         startAnimation(a);
 
-        defaultExpanded = false;
+
     }
 
     public void setDuration(int duration) {

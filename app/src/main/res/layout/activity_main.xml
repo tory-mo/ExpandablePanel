@@ -16,8 +16,14 @@
         app:header_paddingRight="16dp"
         app:header_paddingTop="10dp"
         app:header_paddingBottom="10dp"
+        app:content_paddingTop="10dp"
+        app:content_paddingBottom="10dp"
+        app:content_paddingLeft="16dp"
+        app:content_paddingRight="16dp"
         app:header_backgroundColor="@color/colorPrimaryDark"
-        app:content_backgroundColor="@color/colorAccent">
+        app:content_backgroundColor="@color/colorPrimaryDark"
+        app:collapsed_separator="false"
+        app:header_separator="false">
     </by.torymo.expandablepanel.ExpandablePanelLayout>
     <by.torymo.expandablepanel.ExpandablePanelLayout
         android:layout_width="match_parent"
@@ -28,9 +34,14 @@
         app:header_paddingRight="16dp"
         app:header_paddingTop="10dp"
         app:header_paddingBottom="10dp"
-        android:layout_marginTop="10dp"
+        app:content_paddingLeft="16dp"
+        app:content_paddingRight="16dp"
+        app:content_paddingTop="10dp"
+        app:content_paddingBottom="10dp"
         app:header_backgroundColor="@color/colorPrimaryDark"
-        app:content_backgroundColor="@color/colorAccent">
+        app:content_backgroundColor="@color/colorPrimaryDark"
+        app:header_separator="false"
+        app:collapsed_separator="false">
     </by.torymo.expandablepanel.ExpandablePanelLayout>
 
 </LinearLayout>
